@@ -4,29 +4,42 @@ var calledHole;
 var dugABody;
 var numCells;
 var curGame;
+var clockId;
+var gameStarted;
+var gameTime=0;
 
-//document.onmousedown=click;
+function Timer() 
+{
+	gameTime = gameTime+1;
+	var hldr = String(gameTime);
+	if(hldr.length == 1)
+	{
+		document.getElementById("clock").firstChild.nodeValue = "00" + gameTime;
+	}
+	else if(hldr.length == 2)
+	{
+		document.getElementById("clock").firstChild.nodeValue = "0" + gameTime;
+	}
+	else if(hldr.length == 3)
+	{
+		document.getElementById("clock").firstChild.nodeValue = gameTime;
+	}
+	else
+	{
+		document.getElementById("clock").firstChild.nodeValue = "999";
+	}
 
-//function click(e)
-//{
-//	if (navigator.appName == 'Netscape' && (e.which == 3 || e.which == 2))
-//	{
-//		var dig=this.getAttribute('id');
-//		alert(dig);
-//		return false;
-//	}
-//	else if (navigator.appName == 'Microsoft Internet Explorer' && (event.button == 2 || event.button == 3))
-//     	{
-//		alert("Sorry, you do not have permission to right click.");
-//		return false;
-//	}
-//
-//	return true;
-//}
-
+}
 
 function loadBoard(numRow)
 {
+	gameTime=0;
+	if(gameStarted)
+	{
+		clearInterval(clockId);
+		document.getElementById("clock").firstChild.nodeValue = "000";
+	}
+	gameStarted=false;
 	curGame=numRow;
 	numCells = curGame*curGame;
 	bodies = new Array(numCells);
@@ -36,15 +49,15 @@ function loadBoard(numRow)
 		numBodies=10;
 		board.style.width="450px";
 	}
+	else if(curGame==12)
+	{
+		numBodies=36;
+		board.style.width="600px";
+	}
 	else if(curGame==15)
 	{
-		numBodies=60;
+		numBodies=40;
 		board.style.width="750px";
-	}
-	else if(curGame==20)
-	{
-		numBodies=100;
-		board.style.width="1000px";
 	}
 	holesLeft=numCells-numBodies;
 	calledHole=" ";
@@ -100,10 +113,17 @@ function digHole(e)
 		return;
 	}
 
+
 	if (navigator.appName == 'Netscape' && (e.which == 3 || e.which == 2))
 	{
 		if(e.which == 3)
 		{
+			if(!gameStarted)
+			{
+				gameStarted = true;
+				clockId = setInterval('Timer()', 1000 );
+			}
+				
 			if(document.getElementById(dig).getAttribute('src') == 'headstone.bmp')
 			{
 				document.getElementById(dig).setAttribute('src','plot.bmp');
@@ -123,6 +143,11 @@ function digHole(e)
        	{
 		if(e.button == 3)
 		{
+			if(!gameStarted)
+			{
+				gameStarted = true;
+				clockId = setInterval('Timer()', 1000 );
+			}
 			if(document.getElementById(dig).getAttribute('src') == 'headstone.bmp')
 			{
 				document.getElementById(dig).setAttribute('src','plot.bmp');
@@ -140,6 +165,11 @@ function digHole(e)
 	}
 	else
 	{
+		if(!gameStarted)
+		{
+			gameStarted = true;
+			clockId = setInterval('Timer()', 1000 );
+		}
 		if(document.getElementById(dig).getAttribute('src') == 'headstone.bmp')
 		{
 			return;
@@ -155,6 +185,7 @@ function digHole(e)
 				dig = "img" + y;
 				document.getElementById(dig).setAttribute('src','body.bmp');
 				dugABody=true;
+				clearInterval(clockId);
 			}
 		}
 	}
@@ -200,8 +231,9 @@ function digHole(e)
 		}
 		if(holesLeft==0)
 		{
-			alert("HEY YOU DID IT!!!!");
-			loadBoard(curGame);
+			clearInterval(clockId);
+			alert("HEY YOU DID IT!!!! It took you " + gameTime + " seconds!");
+			//loadBoard(curGame);
 		}
 	}
 }
