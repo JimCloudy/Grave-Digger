@@ -1,18 +1,62 @@
-var bodies = new Array(81);
-holesLeft=71;
-var calledHole=" ";
+var bodies; 
+var holesLeft;
+var calledHole;
+var dugABody;
+var numCells;
+var curGame;
 
-for(x=0;x<81;x++)
-{
-	bodies[x]=" ";
-}
+//document.onmousedown=click;
 
-function loadBoard()
+//function click(e)
+//{
+//	if (navigator.appName == 'Netscape' && (e.which == 3 || e.which == 2))
+//	{
+//		var dig=this.getAttribute('id');
+//		alert(dig);
+//		return false;
+//	}
+//	else if (navigator.appName == 'Microsoft Internet Explorer' && (event.button == 2 || event.button == 3))
+//     	{
+//		alert("Sorry, you do not have permission to right click.");
+//		return false;
+//	}
+//
+//	return true;
+//}
+
+
+function loadBoard(numRow)
 {
+	curGame=numRow;
+	numCells = curGame*curGame;
+	bodies = new Array(numCells);
+	board.innerHTML="";
+	if(curGame==9)
+	{
+		numBodies=10;
+		board.style.width="450px";
+	}
+	else if(curGame==15)
+	{
+		numBodies=60;
+		board.style.width="750px";
+	}
+	else if(curGame==20)
+	{
+		numBodies=100;
+		board.style.width="1000px";
+	}
+	holesLeft=numCells-numBodies;
+	calledHole=" ";
+	dugABody = false;
+	for(x=0;x<numCells;x++)
+	{
+		bodies[x]=" ";
+	}
 	newFieldElement = document.createElement('UL');
 	newFieldElement.setAttribute('id','graves');
 	board.appendChild(newFieldElement);
-	for(x=0;x<81;x++)
+	for(x=0;x<numCells;x++)
 	{
 		newFieldElement = document.createElement('LI');
 		newFieldElement.setAttribute('id','grave'+x);
@@ -22,16 +66,15 @@ function loadBoard()
 		newFieldElement.setAttribute('id','img'+x);
 		newFieldElement.setAttribute('name',x);
 		newFieldElement.setAttribute('src','plot.bmp');
-		newFieldElement.onclick = digHole;
+		newFieldElement.onmousedown = digHole;
 		document.getElementById('grave'+x).appendChild(newFieldElement);
 		
 	}
 
-	numBodies=10;
 	filled=0;
 	while(filled<numBodies)
 	{
-		y=Math.floor(Math.random()*81);
+		y=Math.floor(Math.random()*numCells);
 		if(bodies[y]!="body")
 		{
 			bodies[y]="body";
@@ -42,30 +85,89 @@ function loadBoard()
 
 }
 
-function digHole()
+function digHole(e)
 {
-
+	if(dugABody)
+	{
+		return;
+	}
+	
 	var x=this.getAttribute('name');
 	var dig=this.getAttribute('id');
+
+	if(document.getElementById(dig).getAttribute('src') != 'headstone.bmp' && document.getElementById(dig).getAttribute('src') != 'plot.bmp')
+	{
+		return;
+	}
+
+	if (navigator.appName == 'Netscape' && (e.which == 3 || e.which == 2))
+	{
+		if(e.which == 3)
+		{
+			if(document.getElementById(dig).getAttribute('src') == 'headstone.bmp')
+			{
+				document.getElementById(dig).setAttribute('src','plot.bmp');
+			}
+			else
+			{
+				document.getElementById(dig).setAttribute('src','headstone.bmp');
+			}
+		}
+		else
+		{
+			e.preventDefault();
+		}
+		return;
+	}
+	else if (navigator.appName == 'Microsoft Internet Explorer' && (event.button == 2 || event.button == 3))
+       	{
+		if(e.button == 3)
+		{
+			if(document.getElementById(dig).getAttribute('src') == 'headstone.bmp')
+			{
+				document.getElementById(dig).setAttribute('src','plot.bmp');
+			}
+			else
+			{
+				document.getElementById(dig).setAttribute('src','headstone.bmp');
+			}
+		}
+		else
+		{
+			e.preventDefault();
+		}
+		return;
+	}
+	else
+	{
+		if(document.getElementById(dig).getAttribute('src') == 'headstone.bmp')
+		{
+			return;
+		}
+	}	
 	
 	if(bodies[x]=="body")
 	{
-		for(y=0;y<81;y++)
+		for(y=0;y<numCells;y++)
 		{
 			if(bodies[y]=="body")
 			{
 				dig = "img" + y;
 				document.getElementById(dig).setAttribute('src','body.bmp');
+				dugABody=true;
 			}
 		}
 	}
 	else
 	{	
+		if(document.getElementById(dig).getAttribute('src')=='plot.bmp')
+		{
+			holesLeft=holesLeft-1;
+		}
 		switch(bodies[x])
 		{
 			case 0:
 			document.getElementById(dig).setAttribute('src','hole.bmp');
-//			calledHole=" ";
 			clearHoles(dig);
 			break;
 			case 1:
@@ -96,79 +198,102 @@ function digHole()
 			document.getElementById(dig).setAttribute('src','hole.bmp');
 			break;
 		}
-		holesLeft=holesLeft-1;
 		if(holesLeft==0)
 		{
 			alert("HEY YOU DID IT!!!!");
+			loadBoard(curGame);
 		}
 	}
 }
 
 function bodiesAround()
 {
-	for(x=0;x<81;x++)
+	for(x=0;x<numCells;x++)
 	{
 		count=0;
-		n=(x+1)%9;
+		n=(x+1)%curGame;
 		if(n!=0)
 		{
 			check=x+1;
-			if(bodies[check]=="body")
-			{
-				count++;
-			}
-		
-			check=x+10;
-			if(bodies[check]=="body")
-			{
-				count++;
-			}
-			check=x-8;
-			if(check>=0)
+			if(check>=0&&check<numCells)
 			{
 				if(bodies[check]=="body")
 				{
 					count++;
 				}
 			}
+			check=x+curGame+1;
+			if(check>=0&&check<numCells)
+			{
+				if(bodies[check]=="body")
+				{
+					count++;
+				}
+			}
+			check=x-curGame+1;
+			if(check>=0&&check<numCells)
+			{
+				if(check>=0)
+				{
+					if(bodies[check]=="body")
+					{
+						count++;
+					}
+				}
+			}
 		}
-		check=x+9;
-		if(bodies[check]=="body")
+		check=x+curGame;
+		if(check>=0&&check<numCells)
 		{
-			count++;
+			if(bodies[check]=="body")
+			{
+				count++;
+			}
 		}
-		n=x%9;
+		n=x%curGame;
 		if(n!=0)
 		{
-			check=x+8;
-			if(bodies[check]=="body")
-			{
-				count++;
-			}
-			check=x-1;
-			if(check>=0)
+			check=x+curGame-1;
+			if(check>=0&&check<numCells)
 			{
 				if(bodies[check]=="body")
-					{
-						count++;
-					}
-			}
-			check=x-10;
-			if(check>=0)
-			{
-				if(bodies[check]=="body")
-					{
-						count++;
-					}
-			}	
-		}
-		check=x-9;
-		if(check>=0)
-		{
-			if(bodies[check]=="body")
 				{
 					count++;
 				}
+			}
+			check=x-1;
+			if(check>=0&&check<numCells)
+			{
+				if(check>=0)
+				{
+					if(bodies[check]=="body")
+						{
+							count++;
+						}
+				}
+			}
+			check=x-curGame-1;
+			if(check>=0&&check<numCells)
+			{
+				if(check>=0)
+				{
+					if(bodies[check]=="body")
+						{
+							count++;
+						}
+				}	
+			}
+		}
+		check=x-curGame;
+		if(check>=0&&check<numCells)
+		{
+			if(check>=0)
+			{
+				if(bodies[check]=="body")
+					{
+						count++;
+					}
+			}
 		}
 		if(bodies[x]!="body")
 		{
@@ -179,15 +304,32 @@ function bodiesAround()
 
 function clearHoles(dig)
 {
-	hole = document.getElementById(dig).getAttribute('name');
+	var hole = document.getElementById(dig).getAttribute('name');
 	hole = hole*1;
-	n=(hole+1)%9;
+	if(bodies[hole]!=0)
+	{
+		return;
+	}
+	n=(hole+1)%curGame;
 	if(n!=0)
 	{
+		check=hole-curGame+1;
+		if(check>=0&&check<numCells)
+		{
+			calledHole = "img"+(check);
+			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
+			{
+				showHole(calledHole,check);
+				if(bodies[check]==0)
+				{
+					clearHoles(calledHole);
+				}
+			}
+		}
 		check=hole+1;
-		if(check>=0&&check<81)
+		if(check>=0&&check<numCells)
 		{
-			calledHole = "img"+(check+1);
+			calledHole = "img"+(check);
 			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 			{
 				showHole(calledHole,check);
@@ -197,23 +339,10 @@ function clearHoles(dig)
 				}
 			}
 		}
-		check=hole+10;
-		if(check>=0&&check<81)
+		check=hole+curGame+1;
+		if(check>=0&&check<numCells)
 		{
-			calledHole = "img"+(check+1);
-			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
-			{
-				showHole(calledHole,check);
-				if(bodies[check]==0)
-				{
-					clearHoles(calledHole);
-				}
-			}
-		}
-		check=hole-8;
-		if(check>=0&&check<81)
-		{
-			calledHole = "img"+(check+1);
+			calledHole = "img"+(check);
 			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 			{
 				showHole(calledHole,check);
@@ -224,10 +353,10 @@ function clearHoles(dig)
 			}
 		}
 	}
-	check=hole+9;
-	if(check>=0&&check<81)
+	check=hole+curGame;
+	if(check>=0&&check<numCells)
 	{
-		calledHole = "img"+(check+1);
+		calledHole = "img"+(check);
 		if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 		{
 			showHole(calledHole,check);
@@ -236,13 +365,14 @@ function clearHoles(dig)
 				clearHoles(calledHole);
 			}
 		}
-	}	n=hole%9;
+	}	
+	n=hole%curGame;
 	if(n!=0)
 	{
-		check=hole+8;
-		if(check>=0&&check<81)
+		check=hole+curGame-1;
+		if(check>=0&&check<numCells)
 		{
-			calledHole = "img"+(check+1);
+			calledHole = "img"+(check);
 			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 			{
 				showHole(calledHole,check);
@@ -253,9 +383,9 @@ function clearHoles(dig)
 			}
 		}
 		check=hole-1;
-		if(check>=0&&check<81)
+		if(check>=0&&check<numCells)
 		{
-			calledHole = "img"+(check+1);
+			calledHole = "img"+(check);
 			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 			{
 				showHole(calledHole,check);
@@ -265,10 +395,10 @@ function clearHoles(dig)
 				}
 			}
 		}
-		check=hole-10;
-		if(check>=0&&check<81)
+		check=hole-curGame-1;
+		if(check>=0&&check<numCells)
 		{
-			calledHole = "img"+(check+1);
+			calledHole = "img"+(check);
 			if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 			{
 				showHole(calledHole,check);
@@ -279,10 +409,10 @@ function clearHoles(dig)
 			}
 		}
 	}
-	check=hole-9;
-	if(check>=0&&check<81)
+	check=hole-curGame;
+	if(check>=0&&check<numCells)
 	{
-		calledHole = "img"+(check+1);
+		calledHole = "img"+(check);
 		if(document.getElementById(calledHole).getAttribute("src")=="plot.bmp")
 		{
 			showHole(calledHole,check);
@@ -296,11 +426,10 @@ function clearHoles(dig)
 
 function showHole(dig,hole)
 {
-
+	holesLeft=holesLeft-1;
 	switch(bodies[hole])
 	{
 		case 0:
-			alert(dig);
 		document.getElementById(dig).setAttribute('src','hole.bmp');
 		break;
 		case 1:

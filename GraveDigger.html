@@ -6,7 +6,7 @@
 		<style type="text/css">
 			ul, li {
 				list-style-type:none;
-				padding:0;
+				padding:1px;
 				margin:0 auto;
 			}
 			li {
@@ -24,11 +24,24 @@
 			div{
 				width:450px;
 				margin:auto;
+				text-align:center;
 			}
 		</style>
 	</head>
-	<body onload="loadBoard()">
+	<body onload="loadBoard(9)" oncontextmenu="return false;">
+		<div style="color:brown">
+			<h1>G R A V E  D I G G E R</h1>
+			<h3>To play leftclick on a square to dig a grave. Middleclick on a square to mark it with a headstone.
+				To win dig all graves without digging up a body.</h3>
+		</div>
+		<div><input type="button" onclick="loadBoard(9)" value="SMALL GAME">
+			<input type="button" onclick="loadBoard(15)" value="MEDIUM GAME">
+			<input type="button" onclick="loadBoard(20)" value="LARGE GAME">
+		</div>
+				
 		<div id="board"></div> 
+		<div><input type="button" onclick="loadBoard(curGame)" value="New Game"></div>	
+	</body>
 	</body>
 </html>
 		
